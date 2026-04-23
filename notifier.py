@@ -1,6 +1,7 @@
 import sys
 import re
 import signal
+from datetime import datetime
 signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 import os
 import smtplib
@@ -52,6 +53,14 @@ def send_email_gmail(to_email, subject, text_body, html_body=None, image_path=No
     except smtplib.SMTPException as e:
         print(f"SMTP error sending email: {e}")
         raise
+
+def format_dates_html(text):
+    """Replace YYYY-MM-DD dates with bolded abbreviated month format in HTML."""
+    def _replace(m):
+        dt = datetime.strptime(m.group(0), '%Y-%m-%d')
+        return f'<strong>{dt.strftime("%b %-d, %Y")}</strong>'
+    return re.sub(r'\d{4}-\d{2}-\d{2}', _replace, text)
+
 
 def generate_availability_strings(lines, start_date=None, end_date=None):
     """Return a list of dicts describing each available campground."""
@@ -162,7 +171,7 @@ def main(args, stdin):
         text_body = f"{full_output}\nNo campsites currently available. Will keep checking."
 
     # ── HTML body ────────────────────────────────────────────────────────────
-    safe_output = full_output.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+    safe_output = format_dates_html(full_output.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;"))
     heatmap_html = '<p><img src="cid:heatmap" alt="Campsite Availability Heatmap" style="max-width:100%;border-radius:6px;"></p>' if heatmap_path else ''
 
     if available_sites:
