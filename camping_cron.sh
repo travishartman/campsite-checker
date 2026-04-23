@@ -18,8 +18,6 @@ print(f"START_DATE={today + relativedelta(months=5) - timedelta(days=1)}")
 print(f"END_DATE={today + relativedelta(months=5) + timedelta(days=1)}")
 print(f"FULL_START_DATE={today}")
 print(f"FULL_END_DATE={today + relativedelta(months=5)}")
-print(f"CAMP4_START_DATE={today + timedelta(days=13)}")
-print(f"CAMP4_END_DATE={today + timedelta(days=15)}")
 PYEOF
 )
 
@@ -39,10 +37,11 @@ FULL_ARGS=(
   --parks 232448 232450 232447 232449
 )
 
-# Camp 4 (14-day window)
+# Camp 4 — same full window as heatmap so Book Now matches what heatmap shows
 CAMP4_ARGS=(
-  --start-date "$CAMP4_START_DATE"
-  --end-date "$CAMP4_END_DATE"
+  --start-date "$FULL_START_DATE"
+  --end-date "$FULL_END_DATE"
+  --nights 1
   --parks 10004152
 )
 LOG_FILE="${LOG_FILE:-$SCRIPT_DIR/camping_cron.log}"
@@ -137,7 +136,7 @@ $VALLEY_OUTPUT
 --- Full Window Sweep ($FULL_START_DATE to $FULL_END_DATE) ---
 $FULL_OUTPUT
 
---- Camp 4 ($CAMP4_START_DATE to $CAMP4_END_DATE) ---
+--- Camp 4 ($FULL_START_DATE to $FULL_END_DATE) ---
 $CAMP4_OUTPUT"
 
 if echo "$COMBINED_OUTPUT" | grep -q "🏕"; then
