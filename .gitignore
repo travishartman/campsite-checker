@@ -1,0 +1,10 @@
+/myvenv/
+__pycache__
+/next*
+*.swp
+*egg-info
+.env
+node_modules/
+.DS_Store
+*.log
+
