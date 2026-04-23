@@ -60,9 +60,11 @@ BSD `date -v` (macOS-only) was replaced with Python's `datetime` + `python-dateu
 
 ---
 
-## Scheduling: LaunchAgent (macOS)
+## Scheduling: GitHub Actions
 
-A `com.travishartman.camping-checker.plist` LaunchAgent runs `camping_cron.sh` daily at 7:00 AM PT, replacing the original crontab approach. Logs to `camping_cron.log`.
+A `.github/workflows/camping-checker.yml` workflow runs `camping_cron.sh` daily at 7:00 AM PT via a `schedule` cron trigger. The workflow can also be triggered manually from the GitHub Actions UI via `workflow_dispatch`.
+
+Credentials (`GMAIL_EMAIL`, `GMAIL_PASSWORD`, `NOTIFY_EMAIL`) are stored as encrypted GitHub repository secrets and injected as environment variables at runtime — no credentials are stored in the repo.
 
 ---
 

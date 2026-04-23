@@ -1,0 +1,45 @@
+name: Campsite Checker
+
+on:
+  schedule:
+    # Runs daily at 7:00 AM PT (15:00 UTC in winter / 14:00 UTC in summer)
+    # Adjust for daylight saving time as needed
+    - cron: '0 15 * * *'
+  workflow_dispatch:  # Allow manual trigger from GitHub Actions UI
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    env:
+      GMAIL_EMAIL: ${{ secrets.GMAIL_EMAIL }}
+      GMAIL_PASSWORD: ${{ secrets.GMAIL_PASSWORD }}
+      NOTIFY_EMAIL: ${{ secrets.NOTIFY_EMAIL }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          cache: 'pip'
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install Node dependencies
+        run: npm install
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run campsite checker
+        run: bash camping_cron.sh

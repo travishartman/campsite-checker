@@ -1,6 +1,7 @@
 #!/bin/bash
-# Simple cron job script to check campsite availability and send notification
-# Add to crontab: */5 * * * * /path/to/camping_cron.sh
+# Campsite availability checker — orchestrates all sweeps and sends email notification.
+# Triggered daily via GitHub Actions (.github/workflows/camping-checker.yml).
+# Can also be run manually: source .env && bash camping_cron.sh
 
 # --- Config ---
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

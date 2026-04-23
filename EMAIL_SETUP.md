@@ -1,83 +1,61 @@
 # Email Notification Setup
 
-This guide explains how to set up email notifications for campsite availability alerts.
+This guide explains how to configure email notifications for campsite availability alerts.
 
 ## Configuration
 
-The email configuration is stored in `.env` file with the following variables:
+Credentials are passed as **GitHub Actions repository secrets** (never stored in the repo).
 
-```bash
-# Sender Gmail address
-export GMAIL_EMAIL=your-sender@gmail.com
+Add the following secrets at: `https://github.com/travishartman/campsite-checker/settings/secrets/actions`
 
-# Gmail app password (16-character app-specific password, NO spaces)
-export GMAIL_PASSWORD=jskhevqepiamyuvc
+| Secret | Description |
+|---|---|
+| `GMAIL_EMAIL` | Gmail address used to send notifications |
+| `GMAIL_PASSWORD` | Gmail App Password (16 characters, see below) |
+| `NOTIFY_EMAIL` | Email address to receive notifications |
 
-# Recipient email address
-export NOTIFY_EMAIL=your-recipient@gmail.com
-```
-
-> **Important:** Store the app password **without spaces**. Gmail displays it with spaces in the UI,
-> but the password must be stored as a continuous 16-character string (e.g. `jskhevqepiamyuvc`).
+> For local runs only: copy `.env.example` to `.env` and fill in the values. `.env` is gitignored.
 
 ## How It Works
 
-1. **camping.py** runs and checks for campsite availability
-2. If campsites are available (🏕 emoji in output), the script pipes output to **notifier.py**
-3. **notifier.py** sends an email via Gmail SMTP to the configured recipient
-
-## Testing Email Notifications
-
-### Test 1: Send a test email
-```bash
-./test_notification.sh
-```
-
-This will send a test email to verify your Gmail credentials are working.
-
-### Test 2: Run the full check manually
-```bash
-source .env
-./camping_cron.sh
-```
-
-This runs the campsite checker and will send an email if sites are available.
+1. **camping_cron.sh** runs three availability sweeps via `camping.py`
+2. Results are combined and piped to **notifier.py**
+3. **notifier.py** sends an HTML email via Gmail SMTP with:
+   - Available campgrounds with **Book now** links
+   - 6-month calendar heatmap embedded inline
+   - Full check output for reference
 
 ## Gmail App Password Setup
 
 **Important:** You need a Gmail App Password, not your regular Gmail password.
 
 1. Go to your Google Account: https://myaccount.google.com/
-2. Navigate to Security → 2-Step Verification (enable if not already)
-3. Scroll down to "App passwords"
-4. Generate a new app password for "Mail" on "Mac" (or other device)
-5. Copy the 16-character password (no spaces) into `.env` as `GMAIL_PASSWORD`
+2. Navigate to **Security → 2-Step Verification** (enable if not already)
+3. Scroll down to **App passwords**
+4. Generate a new app password for "Mail"
+5. Copy the 16-character password into the `GMAIL_PASSWORD` secret
 
-## Automated Checking with Cron
+> Spaces in the displayed password are stripped automatically — paste it exactly as shown.
 
-The `camping_cron.sh` script:
-- Runs every 5 minutes (when set up in crontab)
-- Activates the Python virtual environment
-- Sources email credentials from `.env`
-- Runs the campsite checker
-- Sends email notification if campsites are available
-- Logs all output to `camping_cron.log`
-
-### To set up the cron job:
+## Testing Locally
 
 ```bash
-crontab -e
+cp .env.example .env
+# Fill in .env with your credentials
+source .env
+bash camping_cron.sh
 ```
 
-Add this line (adjust path as needed):
-```
-*/5 * * * * /Users/travishartman/Desktop/dev/recreation-gov-campsite-checker/camping_cron.sh
-```
-
-### Monitor the logs:
+Or to send a quick test email only:
 ```bash
-tail -f camping_cron.log
+source .env && bash test_notification.sh
 ```
+
+## Monitoring
+
+Run history and logs are available in the GitHub Actions tab:
+`https://github.com/travishartman/campsite-checker/actions`
+
 
 ## Customizing Search Parameters
 

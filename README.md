@@ -46,7 +46,7 @@ If you only want results for certain campsite IDs, pass `--campsite-ids <int>`:
 $ python camping.py --start-date 2018-07-20 --end-date 2018-07-23 --parks 232431 --show-campsite-info --nights 1 --campsite-ids 18621 
 ```
 
-You'll want to put this script into a crontab or scheduled job. You could also grep the output for the success emoji (🏕) and then do something in response, like notify you that there is a campsite available.
+You'll want to put this script into a scheduled job. You could also grep the output for the success emoji (🏕) and then do something in response, like notify you that there is a campsite available. See `.github/workflows/camping-checker.yml` for the GitHub Actions setup.
 
 ## Number of nights
 If you're flexible on travel dates, you can search for a specific number of contiguous nights within a wide range of dates. This is useful for campgrounds in high-demand areas (like Yosemite Valley) or during peak season when openings are rare. Simply specify the `--nights` argument. For example, to search for a 5-day reservation in the month of June 2020 at Chisos Basin:
