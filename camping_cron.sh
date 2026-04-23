@@ -108,10 +108,10 @@ if ! python -c "import requests" &>/dev/null; then
 fi
 
 # Run valley campgrounds (5-month release window)
-VALLEY_OUTPUT=$(run_check "valley-campgrounds" "$START_DATE" "$END_DATE" "${ARGS[@]}")
+VALLEY_OUTPUT=$(run_check "valley-campgrounds" "${ARGS[@]}")
 
 # Run full cancellation sweep: today through 5 months (human-readable)
-FULL_OUTPUT=$(run_check "full-sweep" "$FULL_START_DATE" "$FULL_END_DATE" "${FULL_ARGS[@]}")
+FULL_OUTPUT=$(run_check "full-sweep" "${FULL_ARGS[@]}")
 
 # Also run the full sweep as JSON to generate the heatmap
 log "Generating availability heatmap..." >&2
@@ -128,7 +128,7 @@ fi
 export HEATMAP_PNG_PATH
 
 # Run Camp 4 separately (~14-day window)
-CAMP4_OUTPUT=$(run_check "camp4" "$CAMP4_START_DATE" "$CAMP4_END_DATE" "${CAMP4_ARGS[@]}")
+CAMP4_OUTPUT=$(run_check "camp4" "${CAMP4_ARGS[@]}")
 
 # Combine results and send a single notification email
 COMBINED_OUTPUT="--- Valley Campgrounds ($START_DATE to $END_DATE) ---
