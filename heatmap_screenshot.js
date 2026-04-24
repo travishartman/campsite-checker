@@ -84,6 +84,8 @@ const parkConfigJSON = JSON.stringify(PARK_CONFIG);
 const chartDataJSON = JSON.stringify(
   chartData.map(d => ({ date: d.date.toISOString().slice(0, 10), parks: d.parks }))
 );
+const numMonthsJSON = numMonths;
+const startMonthOffsetJSON = startMonthOffset;
 
 const html = `<!DOCTYPE html>
 <html>
@@ -118,6 +120,8 @@ const html = `<!DOCTYPE html>
 <script>
 const PARK_CONFIG = ${parkConfigJSON};
 const RAW_DATA    = ${chartDataJSON};
+const numMonths   = ${numMonthsJSON};
+const startMonthOffset = ${startMonthOffsetJSON};
 
 // Build a date->parks lookup
 const lookup = {};
