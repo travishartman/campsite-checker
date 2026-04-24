@@ -1,4 +1,5 @@
 import logging
+import time
 
 import requests
 import user_agent 
@@ -36,13 +37,19 @@ class RecreationClient:
         return resp["campground"]["facility_name"]
 
     @classmethod
-    def _send_request(cls, url, params):
-        resp = requests.get(url, params=params, headers=cls.headers)
-        if resp.status_code != 200:
+    def _send_request(cls, url, params, retries=5, backoff=10):
+        for attempt in range(retries):
+            resp = requests.get(url, params=params, headers=cls.headers)
+            if resp.status_code == 200:
+                return resp.json()
+            if resp.status_code == 429 and attempt < retries - 1:
+                wait = backoff * (2 ** attempt)  # 10s, 20s, 40s, 80s
+                LOG.warning("429 rate limit from %s — retrying in %ds (attempt %d/%d)", url, wait, attempt + 1, retries)
+                time.sleep(wait)
+                continue
             raise RuntimeError(
                 "failedRequest",
                 "ERROR, {status_code} code received from {url}: {resp_text}".format(
                     status_code=resp.status_code, url=url, resp_text=resp.text
                 ),
             )
-        return resp.json()
