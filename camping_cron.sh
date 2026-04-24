@@ -18,6 +18,8 @@ print(f"START_DATE={today + relativedelta(months=5) - timedelta(days=1)}")
 print(f"END_DATE={today + relativedelta(months=5) + timedelta(days=1)}")
 print(f"FULL_START_DATE={today}")
 print(f"FULL_END_DATE={today + relativedelta(months=5)}")
+print(f"RELEASE_START_DATE={today + relativedelta(months=6) - timedelta(days=1)}")
+print(f"RELEASE_END_DATE={today + relativedelta(months=6) + timedelta(days=1)}")
 PYEOF
 )
 
@@ -43,6 +45,13 @@ CAMP4_ARGS=(
   --end-date "$FULL_END_DATE"
   --nights 1
   --parks 10004152
+)
+
+# Release day sweep — all campgrounds at 6-month horizon (new inventory)
+RELEASE_ARGS=(
+  --start-date "$RELEASE_START_DATE"
+  --end-date "$RELEASE_END_DATE"
+  --parks 232448 232450 232447 232449 10004152
 )
 LOG_FILE="${LOG_FILE:-$SCRIPT_DIR/camping_cron.log}"
 LOCK_FILE="${LOCK_FILE:-/tmp/camping_cron.lock}"
@@ -112,6 +121,9 @@ VALLEY_OUTPUT=$(run_check "valley-campgrounds" "${ARGS[@]}")
 # Run full cancellation sweep: today through 5 months (human-readable)
 FULL_OUTPUT=$(run_check "full-sweep" "${FULL_ARGS[@]}")
 
+# Run 6-month release day sweep — catches newly released inventory
+RELEASE_OUTPUT=$(run_check "release-day" "${RELEASE_ARGS[@]}")
+
 # Also run the full sweep as JSON to generate the heatmap
 log "Generating availability heatmap..." >&2
 HEATMAP_PNG_PATH="/tmp/camping_heatmap_$$.png"
@@ -137,7 +149,10 @@ $VALLEY_OUTPUT
 $FULL_OUTPUT
 
 --- Camp 4 ($FULL_START_DATE to $FULL_END_DATE) ---
-$CAMP4_OUTPUT"
+$CAMP4_OUTPUT
+
+--- 6-Month Release Day ($RELEASE_START_DATE to $RELEASE_END_DATE) ---
+$RELEASE_OUTPUT"
 
 if echo "$COMBINED_OUTPUT" | grep -q "🏕"; then
   log "Available campsites found! Sending notification..."
