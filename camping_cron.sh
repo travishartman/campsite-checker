@@ -125,18 +125,33 @@ FULL_OUTPUT=$(run_check "full-sweep" "${FULL_ARGS[@]}")
 RELEASE_OUTPUT=$(run_check "release-day" "${RELEASE_ARGS[@]}")
 
 # Also run the full sweep as JSON to generate the heatmap
-log "Generating availability heatmap..." >&2
+log "Generating cancellations heatmap..." >&2
 HEATMAP_PNG_PATH="/tmp/camping_heatmap_$$.png"
 "$PYTHON_BIN" "$CAMPING_PY" --start-date "$FULL_START_DATE" --end-date "$FULL_END_DATE" \
   --nights 1 --parks 232448 232450 232447 232449 10004152 --json-output 2>/dev/null \
   | node "$SCRIPT_DIR/heatmap_screenshot.js" --output "$HEATMAP_PNG_PATH"
 if [[ -f "$HEATMAP_PNG_PATH" ]]; then
-  log "Heatmap generated: $HEATMAP_PNG_PATH" >&2
+  log "Cancellations heatmap generated: $HEATMAP_PNG_PATH" >&2
 else
-  log "WARNING: Heatmap generation failed — email will be sent without it" >&2
+  log "WARNING: Cancellations heatmap generation failed" >&2
   HEATMAP_PNG_PATH=""
 fi
 export HEATMAP_PNG_PATH
+
+# Generate "Just Released" heatmap — 6-month horizon, 2 months shown
+log "Generating just-released heatmap..." >&2
+RELEASE_HEATMAP_PNG_PATH="/tmp/camping_heatmap_release_$$.png"
+"$PYTHON_BIN" "$CAMPING_PY" --start-date "$RELEASE_START_DATE" --end-date "$RELEASE_END_DATE" \
+  --parks 232448 232450 232447 232449 10004152 --json-output 2>/dev/null \
+  | node "$SCRIPT_DIR/heatmap_screenshot.js" --output "$RELEASE_HEATMAP_PNG_PATH" \
+    --start-month-offset 6 --num-months 2
+if [[ -f "$RELEASE_HEATMAP_PNG_PATH" ]]; then
+  log "Just-released heatmap generated: $RELEASE_HEATMAP_PNG_PATH" >&2
+else
+  log "WARNING: Just-released heatmap generation failed" >&2
+  RELEASE_HEATMAP_PNG_PATH=""
+fi
+export RELEASE_HEATMAP_PNG_PATH
 
 # Run Camp 4 separately (~14-day window)
 CAMP4_OUTPUT=$(run_check "camp4" "${CAMP4_ARGS[@]}")
@@ -162,5 +177,6 @@ fi
 
 echo "$COMBINED_OUTPUT" | "$PYTHON_BIN" "$NOTIFIER_PY" 2>&1 | tee -a "$LOG_FILE"
 
-# Clean up temp heatmap
+# Clean up temp heatmaps
 [[ -n "$HEATMAP_PNG_PATH" && -f "$HEATMAP_PNG_PATH" ]] && rm -f "$HEATMAP_PNG_PATH"
+[[ -n "$RELEASE_HEATMAP_PNG_PATH" && -f "$RELEASE_HEATMAP_PNG_PATH" ]] && rm -f "$RELEASE_HEATMAP_PNG_PATH"

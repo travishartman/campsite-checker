@@ -15,7 +15,7 @@ from enums.emoji import Emoji
 #   GMAIL_PASSWORD - Gmail app password (no spaces)
 #   NOTIFY_EMAIL   - recipient email address
 
-def send_email_gmail(to_email, subject, text_body, html_body=None, image_path=None):
+def send_email_gmail(to_email, subject, text_body, html_body=None, image_path=None, release_image_path=None):
     from_email = os.environ.get('GMAIL_EMAIL')
     smtp_server = 'smtp.gmail.com'
     smtp_port = 587
@@ -41,6 +41,13 @@ def send_email_gmail(to_email, subject, text_body, html_body=None, image_path=No
         img.add_header('Content-ID', '<heatmap>')
         img.add_header('Content-Disposition', 'inline', filename='heatmap.png')
         msg.attach(img)
+
+    if release_image_path and os.path.isfile(release_image_path):
+        with open(release_image_path, 'rb') as f:
+            img2 = MIMEImage(f.read())
+        img2.add_header('Content-ID', '<heatmap_release>')
+        img2.add_header('Content-Disposition', 'inline', filename='heatmap_release.png')
+        msg.attach(img2)
 
     try:
         with smtplib.SMTP(smtp_server, smtp_port) as server:
@@ -157,6 +164,7 @@ def main(args, stdin):
 
     to_email = os.environ.get('NOTIFY_EMAIL')
     heatmap_path = os.environ.get('HEATMAP_PNG_PATH')
+    release_heatmap_path = os.environ.get('RELEASE_HEATMAP_PNG_PATH')
 
     # ── Plain-text body ──────────────────────────────────────────────────────
     full_output = "".join(all_lines)
@@ -172,7 +180,20 @@ def main(args, stdin):
 
     # ── HTML body ────────────────────────────────────────────────────────────
     safe_output = format_dates_html(full_output.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;"))
-    heatmap_html = '<p><img src="cid:heatmap" alt="Campsite Availability Heatmap" style="max-width:100%;border-radius:6px;"></p>' if heatmap_path else ''
+
+    release_heatmap_html = ''
+    if release_heatmap_path and os.path.isfile(release_heatmap_path):
+        release_heatmap_html = '''
+        <h2 style="font-size:15px;color:#24292e;margin:0 0 8px;">&#127358; Just Released <span style="font-size:12px;font-weight:400;color:#888;">(6-month horizon)</span></h2>
+        <p style="margin:0 0 20px;"><img src="cid:heatmap_release" alt="Just Released Heatmap" style="max-width:100%;border-radius:6px;"></p>
+        '''
+
+    cancellations_heatmap_html = ''
+    if heatmap_path and os.path.isfile(heatmap_path):
+        cancellations_heatmap_html = '''
+        <h2 style="font-size:15px;color:#24292e;margin:0 0 8px;">&#128197; Cancellations <span style="font-size:12px;font-weight:400;color:#888;">(today &rarr; 5 months)</span></h2>
+        <p style="margin:0 0 20px;"><img src="cid:heatmap" alt="Cancellations Heatmap" style="max-width:100%;border-radius:6px;"></p>
+        '''
 
     if available_sites:
         booking_rows = "".join(
@@ -198,7 +219,8 @@ def main(args, stdin):
     html_body = f"""
     <html><body style="font-family:Arial,sans-serif;max-width:900px;margin:auto;padding:16px;color:#333;">
       <h1 style="font-size:20px;border-bottom:2px solid #3498db;padding-bottom:8px;">{subject}</h1>
-      {heatmap_html}
+      {release_heatmap_html}
+      {cancellations_heatmap_html}
       {booking_html}
       <hr style="margin:24px 0;border:none;border-top:1px solid #eee;">
       <h3 style="color:#555;">Full Check Output</h3>
@@ -208,7 +230,8 @@ def main(args, stdin):
 
     print(f"Sending notification to {to_email}...")
     if to_email:
-        send_email_gmail(to_email, subject, text_body, html_body=html_body, image_path=heatmap_path)
+        send_email_gmail(to_email, subject, text_body, html_body=html_body,
+                         image_path=heatmap_path, release_image_path=release_heatmap_path)
         print(f"Email sent to {to_email}")
     else:
         print("No NOTIFY_EMAIL set. Notification not sent.")

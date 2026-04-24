@@ -25,9 +25,13 @@ const PARK_CONFIG = {
 const args = process.argv.slice(2);
 let inputFile = null;
 let outputFile = null;
+let numMonths = 6;
+let startMonthOffset = 0;
 for (let i = 0; i < args.length; i++) {
-  if (args[i] === '--input')  inputFile  = args[++i];
-  if (args[i] === '--output') outputFile = args[++i];
+  if (args[i] === '--input')              inputFile        = args[++i];
+  if (args[i] === '--output')             outputFile       = args[++i];
+  if (args[i] === '--num-months')         numMonths        = parseInt(args[++i], 10);
+  if (args[i] === '--start-month-offset') startMonthOffset = parseInt(args[++i], 10);
 }
 if (!outputFile) {
   console.error('Usage: node heatmap_screenshot.js --output <path.png> [--input <data.json>]');
@@ -142,9 +146,9 @@ const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov
 
 // Pre-pass: count week columns per month so we can compute a dynamic cell size
 const monthWeekCounts = [];
-for (let mo = 0; mo < 6; mo++) {
-  const ref = new Date(today.getFullYear(), today.getMonth() + mo, 1);
-  const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + mo + 1, 0);
+for (let mo = 0; mo < numMonths; mo++) {
+  const ref = new Date(today.getFullYear(), today.getMonth() + startMonthOffset + mo, 1);
+  const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + startMonthOffset + mo + 1, 0);
   let ws = startOfWeek(ref);
   let wc = 0;
   while (ws <= lastDayOfMonth) { wc++; ws = addDays(ws, 7); }
@@ -155,11 +159,11 @@ const WEEK_GAP = 2;   // px between week columns within a month
 const MONTH_GAP = 8;  // px between month blocks
 const DAY_LABEL_W = 42; // day-of-week label column width
 const BODY_PADDING = 40; // 20px each side
-const availableW = window.innerWidth - BODY_PADDING - DAY_LABEL_W - MONTH_GAP * 5;
-// totalWeeks cells + (totalWeeks - 6) inter-week gaps = availableW
-const CELL_SIZE = Math.max(12, Math.floor((availableW - (totalWeeks - 6) * WEEK_GAP) / totalWeeks));
+const numMonthGaps = Math.max(0, numMonths - 1);
+const availableW = window.innerWidth - BODY_PADDING - DAY_LABEL_W - MONTH_GAP * numMonthGaps;
+const CELL_SIZE = Math.max(12, Math.floor((availableW - (totalWeeks - numMonths) * WEEK_GAP) / totalWeeks));
 
-// Render 6 months
+// Render months
 const chart = document.getElementById('chart');
 const monthsDiv = document.createElement('div');
 monthsDiv.style.display = 'flex';
@@ -187,8 +191,8 @@ monthRow.appendChild(dayLabelCol);
 monthRow.appendChild(monthsDiv);
 chart.appendChild(monthRow);
 
-for (let mo = 0; mo < 6; mo++) {
-  const ref = new Date(today.getFullYear(), today.getMonth() + mo, 1);
+for (let mo = 0; mo < numMonths; mo++) {
+  const ref = new Date(today.getFullYear(), today.getMonth() + startMonthOffset + mo, 1);
   const year = ref.getFullYear();
   const month = ref.getMonth();
   const lastDay = new Date(year, month + 1, 0).getDate();
