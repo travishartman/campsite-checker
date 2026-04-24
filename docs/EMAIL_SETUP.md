@@ -6,7 +6,7 @@ This guide explains how to configure email notifications for campsite availabili
 
 Credentials are passed as **GitHub Actions repository secrets** (never stored in the repo).
 
-Add the following secrets at: `https://github.com/travishartman/campsite-checker/settings/secrets/actions`
+Add the following secrets at: `https://github.com/YOUR_GITHUB_USERNAME/campsite-checker/settings/secrets/actions`
 
 | Secret | Description |
 |---|---|
@@ -54,7 +54,7 @@ source .env && bash test_notification.sh
 ## Monitoring
 
 Run history and logs are available in the GitHub Actions tab:
-`https://github.com/travishartman/campsite-checker/actions`
+`https://github.com/YOUR_GITHUB_USERNAME/campsite-checker/actions`
 
 
 ## Customizing Search Parameters

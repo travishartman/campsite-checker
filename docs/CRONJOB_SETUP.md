@@ -23,7 +23,7 @@ GitHub's built-in scheduled workflows are unreliable for low-traffic repos — r
 | Field | Value |
 |---|---|
 | Title | `Campsite Checker` |
-| URL | `https://api.github.com/repos/travishartman/campsite-checker/actions/workflows/camping-checker.yml/dispatches` |
+| URL | `https://api.github.com/repos/YOUR_GITHUB_USERNAME/campsite-checker/actions/workflows/camping-checker.yml/dispatches` |
 | Schedule | `0 15 * * *` (daily 7:00 AM PT / 15:00 UTC) |
 | Request method | `POST` |
 
@@ -46,7 +46,7 @@ GitHub's built-in scheduled workflows are unreliable for low-traffic repos — r
 
 Click **Run now** in cron-job.org. A successful trigger returns HTTP `204 No Content`.
 
-Then check `github.com/travishartman/campsite-checker/actions` — the workflow run should appear within a few seconds.
+Then check `github.com/YOUR_GITHUB_USERNAME/campsite-checker/actions` — the workflow run should appear within a few seconds.
 
 ---
 
